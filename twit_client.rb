@@ -15,11 +15,13 @@ class TwitterClient
   end
 
   def unfollow_unfollowers
-    friends = get_users_friend_ids(@client)
-    followers = get_users_follower_ids(@client)
+    friends = users_friend_ids
+    followers = users_follower_ids
 
-    friends.each do |friend|
+    friends.each_with_index do |friend, index|
+      puts "Unfollowing #{index+1} of #{friends.length}"
       @client.unfollow(friend) unless followers.include?(friend)
+      sleep 3
     end
   end
 
@@ -47,7 +49,7 @@ class TwitterClient
   end
 
   def search_tweets(search_query)
-    tweets = @client.search(search_query, result_type: 'recent', count: 100)
+    tweets = @client.search(search_query, result_type: 'recent', count: 100, lang: "en")
     tweets.attrs[:statuses].map { |status| status[:user][:id] }
   end
 
@@ -70,4 +72,11 @@ client = TwitterClient.new('TWITTER_CONSUMER_KEY',
                            'TWITTER_CONSUMER_SECRET',
                            'TWITTER_ACCESS_TOKEN',
                            'TWITTER_ACCESS_TOKEN_SECRET')
-client.follow_by_query('@rails')
+
+# follow from an array
+['#javascript', '#ruby', '#reactjs', '#html', '#fifa'].each do |topic|
+  client.follow_by_query(topic)
+end
+
+# unfollow those who don't follow back
+# client.unfollow_unfollowers
